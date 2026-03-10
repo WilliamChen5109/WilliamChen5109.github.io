@@ -1,5 +1,5 @@
 # 你的博客分支名，通常是 main 或 master
-main:
+master:
   push:
     - stages:
         - name: 安装依赖并构建 # 第一阶段：构建
