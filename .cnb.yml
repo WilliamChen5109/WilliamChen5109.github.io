@@ -9,7 +9,6 @@ main:
             - npm run build
         - name: 部署到腾讯云 COS # 第二阶段：部署
           image: tencentcom/coscli
-          # ！！！重要：把下面的链接替换成你密钥仓库中 tencent.yml 的完整地址 ！！！
           imports: https://cnb.cool/kun_kk/blog_secrets/-/blob/main/tencent.yml
           commands: |
             coscli config set --secret_id $COS_SECRET_ID --secret_key $COS_SECRET_KEY
