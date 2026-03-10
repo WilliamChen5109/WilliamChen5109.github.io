@@ -1,0 +1,8 @@
+.fa-gitee-custom {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background: url('https://gitee.com/favicon.ico') no-repeat center center;
+    background-size: contain;
+    vertical-align: middle;
+}
