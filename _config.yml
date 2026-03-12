@@ -101,6 +101,6 @@ theme: butterfly
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
-  type: git
-  repository: https://oauth2:1W1a9f1HQRMO5dB9k915PVf2dGD@cnb.cool/kun_kk/myblog.git
-  branch: master
+  type: 'git'
+  repo: 'https://github.com/WilliamChen5109/WilliamChen5109.github.io'
+  branch: main
