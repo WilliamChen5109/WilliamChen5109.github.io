@@ -1,0 +1,366 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>初识Transformer | 2oveno4z's blog</title><meta name="author" content="WilliamChan"><meta name="copyright" content="WilliamChan"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="初识Transformer架构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识Transformer">
+<meta property="og:url" content="https://williamchen5109.github.io/2026/06/10/%E5%88%9D%E8%AF%86Transformer/index.html">
+<meta property="og:site_name" content="2oveno4z&#39;s blog">
+<meta property="og:description" content="初识Transformer架构">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png">
+<meta property="article:published_time" content="2026-06-10T13:23:56.298Z">
+<meta property="article:modified_time" content="2026-06-10T13:23:56.298Z">
+<meta property="article:author" content="WilliamChan">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "初识Transformer",
+  "url": "https://williamchen5109.github.io/2026/06/10/%E5%88%9D%E8%AF%86Transformer/",
+  "image": "https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png",
+  "datePublished": "2026-06-10T13:23:56.298Z",
+  "dateModified": "2026-06-10T13:23:56.298Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "WilliamChan",
+      "url": "https://williamchen5109.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://williamchen5109.github.io/2026/06/10/%E5%88%9D%E8%AF%86Transformer/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '初识Transformer',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/shuoshuo/"><i class="fa-fw fa-solid fa-poo"></i><span> Shuoshuo</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fa-solid fa-link"></i><span> Link</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fa-solid fa-gift"></i><span> About</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">2oveno4z's blog</span></a><a class="nav-page-title" href="/"><span class="site-name">初识Transformer</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/shuoshuo/"><i class="fa-fw fa-solid fa-poo"></i><span> Shuoshuo</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> List</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/link/"><i class="fa-fw fa-solid fa-link"></i><span> Link</span></a></li><li><a class="site-page child" href="/about/"><i class="fa-fw fa-solid fa-gift"></i><span> About</span></a></li></ul></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">初识Transformer</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-10T13:23:56.298Z" title="发表于 2026-06-10 21:23:56">2026-06-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-10T13:23:56.298Z" title="更新于 2026-06-10 21:23:56">2026-06-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/LLM/">LLM</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Transformer"><a href="#Transformer" class="headerlink" title="Transformer"></a>Transformer</h1><h2 id="What-Transformer"><a href="#What-Transformer" class="headerlink" title="What Transformer?"></a>What Transformer?</h2><p><em>Transformer</em> 是以 <em>attention</em> 为核心的一种模型架构，用 <em>attention</em> 机制替代了 <em>RNN</em> ，从而打破了<em>RNN</em> 的时序依赖，不仅训练效果好，还实现了并行训练，大大减少了训练时间。</p>
+<div>
+    <center>
+    <img src="https://pic2.zhimg.com/v2-6c292e2a4ed43894fc954ee625372c67_1440w.jpg" 
+         alt="not find"
+         style="zoom: 60%;" />
+    <br>
+        <span style="color: #666; font-size: 14px;">Transformer 架构图</span>
+    </center>
+</div>
+
+
+<h2 id="What-Input？"><a href="#What-Input？" class="headerlink" title="What Input？"></a>What Input？</h2><p><strong>Input</strong> 是一个经过 <em>Embedding</em> 之后的向量，<em>Embedding</em> 包含 <em>Word Embedding</em> 和 <em>Position Embedding</em> 其中 <em>Word Embedding</em> 用来捕捉单词之间的语义关系，<em>Position Embedding</em> 用来表示单词间的位置关系。</p>
+<p><strong>Word Embedding：</strong></p>
+<p><em>Word Embedding</em> 有很多种方式可以获取，例如可以采用 Word2Vec、Glove 等算法预训练得到，也可以在 Transformer 中训练得到。</p>
+<div>
+    <center>
+    <img src="https://picx.zhimg.com/80/v2-a1a2ae843211014fd2aec5a1b8ce20d2_720w.webp?source=2c26e567" 
+         alt="not find"
+         style="zoom: 60%;" />
+    <br>
+        <span style="color: #666; font-size: 14px;">word embedding token -&gt; hidden_dim图示</span>
+    </center>
+</div>
+
+
+<p>上图很形象的展示了 <em>word embedding</em> 是如何捕捉语义关系的，即每个维度都表示与一个属性的相关度。</p>
+<p>以 token cat为例</p>
+<ul>
+<li>猫是个生命体，所以living being维度的value较高，0.6</li>
+<li>猫和猫科动物的吻合度更高，所以feline维度的value更高，有0.9（作者提到此处是归一化后的结果，即要保证每个维度的相关度都在-1~+1之间，避免数值过大梯度爆炸）</li>
+<li>猫和皇族没什么关系，所以royalty维度的value就很低，只有-0.7</li>
+</ul>
+<p>由此可见维度越高的输入向量，能表达的信息也越丰富。</p>
+<p><strong>position embedding:</strong></p>
+<p>由于 Transformer 不采用 RNN 的结构，其自注意力机制本身不包含顺序概念，需要人为注入位置信息。生成一个与 <em>Word Embedding</em> 维度相同的位置向量 PE，表示该单词在序列中的绝对或相对位置。</p>
+<p>PE 可以通过训练得到，也可以使用某种公式计算得到。在 Transformer 中采用了后者，计算公式如下：<br>$$<br>PE_{(pos,2i)} &#x3D; \sin \left( \frac{pos}{10000^{2i&#x2F;d}} \right)<br>$$</p>
+<p>$$<br>PE_{(pos,2i+1)} &#x3D; \cos \left( \frac{pos}{10000^{2i&#x2F;d}} \right)<br>$$</p>
+<p>其中，pos 表示单词在句子中的位置，d 表示 PE的维度 (与词 Embedding 一样)，2i 表示偶数的维度，2i+1 表示奇数维度 (即 2i≤d, 2i+1≤d)。</p>
+<p>使用这种公式计算 PE 有以下的好处：</p>
+<ul>
+<li>使 PE 能够适应比训练集里面所有句子更长的句子，假设训练集里面最长的句子是有 20 个单词，突然来了一个长度为 21 的句子，则使用公式计算的方法可以计算出第 21 位的 Embedding。</li>
+<li>可以让模型容易地计算出相对位置，对于固定长度的间距 k，<strong>PE(pos+k)</strong> 可以用 <strong>PE(pos)</strong> 计算得到。因为 Sin(A+B) &#x3D; Sin(A)Cos(B) + Cos(A)Sin(B), Cos(A+B) &#x3D; Cos(A)Cos(B) - Sin(A)Sin(B)。</li>
+</ul>
+<hr>
+<p>将单词的词 <em>Word Embedding</em> 和 <em>Position Embedding</em> 相加，就可以得到单词的表示向量 x，x 就是 Transformer 的 <strong>Input</strong>。</p>
+<p><strong>Input</strong> → <strong>QKV GEMM</strong></p>
+<h3 id="What-Q-K-V？"><a href="#What-Q-K-V？" class="headerlink" title="What Q&#x2F;K&#x2F;V？"></a>What Q&#x2F;K&#x2F;V？</h3><ul>
+<li><strong>Query（Q，查询向量）</strong>：当前 token “想要找什么” 的特征表达；</li>
+<li><strong>Key（K，键向量）</strong>：其他 token “能提供什么” 的特征表达；</li>
+<li><strong>Value（V，值向量）</strong>：其他 token “实际包含的语义信息”；</li>
+</ul>
+<p>而我们此前得到的 <strong>Input</strong> 是通用向量，需要分别通过与三个权重矩阵 Wq、Wk、Wv进行矩阵乘法转换成对应分工的专用向量，此步是为注意力机制做准备，Self-Attention 的核心逻辑是 “<em>每个 token 作为查询者（Q），去匹配其他 token 的被查询者（K），并提取对应 token 的价值（V）</em>”，以此计算 token 间的注意力关联。</p>
+<p><img src="https://pic1.zhimg.com/v2-4f4958704952dcf2c4b652a1cd38f32e_1440w.jpg" alt="img"></p>
+<p>至此 <strong>attention</strong> 的输入也准备完毕</p>
+<h2 id="What-Attention？"><a href="#What-Attention？" class="headerlink" title="What Attention？"></a>What Attention？</h2><p><img src="https://pic2.zhimg.com/v2-f6380627207ff4d1e72addfafeaff0bb_1440w.jpg" alt="img"></p>
+<p>回到 <strong>Transformer</strong> 的内部结构图，左侧为 Encoder block，右侧为 Decoder block。红色圈中的部分为 <strong>Multi-Head Attention</strong>，是由多个 <strong>Self-Attention</strong> 组成的，可以看到 Encoder block 包含一个 Multi-Head Attention，而 Decoder block 包含两个 Multi-Head Attention (其中有一个用到 Masked)。Multi-Head Attention 上方还包括一个 Add &amp; Norm 层，Add 表示残差连接 (Residual Connection) 用于防止网络退化，Norm 表示 Layer Normalization，用于对每一层的激活值进行归一化。</p>
+<p>其中 <strong>Self-Attention</strong> 是 <strong>Transformer</strong> 的重点，接下来将详细介绍</p>
+<h3 id="What-Self-Attention？"><a href="#What-Self-Attention？" class="headerlink" title="What Self-Attention？"></a>What Self-Attention？</h3><div>
+    <center>
+    <img src="https://picx.zhimg.com/v2-6444601b4c41d99e70569b0ea388c3bd_1440w.jpg" 
+         alt="not find"
+         style="zoom: 150%;" />
+    <br>
+        <span style="color: #666; font-size: 14px;">Self-Attention 结构</span>
+    </center>
+</div>
+
+
+<p>计算公式如下：<br>$$<br>Attention(Q, K, V) &#x3D; softmax \left(\frac{QK^T}{\sqrt{d_k}}\right)V<br>$$<br>$$<br>其中{d_k}是Q，K矩阵的列数，即向量维度<br>$$<br>公式中计算矩阵 $Q$ 和 $K^T$ 每一行向量的内积。$Q$ 乘以 $K$ 的转置后，得到的矩阵行列数都为 n，n 为句子单词数，这个矩阵可以表示单词之间的 attention 强度。下图为 $Q$ 乘以 $K^T$，1234 表示的是句子中的单词。</p>
+<p><img src="https://pic4.zhimg.com/v2-9caab2c9a00f6872854fb89278f13ee1_1440w.jpg" alt="img"></p>
+<p>在<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/104393915">【经典精读】万字长文解读Transformer模型和Attention机制</a> 提到</p>
+<blockquote>
+<ul>
+<li><p><strong>为什么有缩放因子$\frac{1}{\sqrt{d_k}}$?</strong></p>
+<ul>
+<li><p>先一句话回答这个问题: 缩放因子的作用是<strong>归一化</strong>。</p>
+</li>
+<li><p>假设 $Q$ , $K$ 里的元素的均值为0，方差为1，那么 $A^T &#x3D; Q^TK$ 中元素的均值为0，方差为 d. 当 d 变得很大时，$A$ 中的元素的方差也会变得很大，如果 $A$ 中的元素方差很大，那么 $softmax(A)$ 的分布会趋于陡峭(分布的方差大，分布集中在绝对值大的区域)。总结一下就是$softmax(A)$ 的分布会和 d 有关。因此 $A$ 中每一个元素乘上 $\frac{1}{\sqrt{d_k}}$ 后，方差又变为1。这使得 $softmax(A)$ 的分布“陡峭”程度与 d 解耦，从而使得训练过程中梯度值保持稳定。</p>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<p>得到 $QK^T$ 之后，使用 Softmax 计算每一个单词对于其他单词的 attention 系数，公式中的 Softmax 是对矩阵的每一行进行 Softmax，即每一行的和都变为 1.</p>
+<p><img src="https://pic3.zhimg.com/v2-96a3716cf7f112f7beabafb59e84f418_1440w.jpg" alt="img"></p>
+<p>得到 Softmax 矩阵之后可以和<strong>V</strong>相乘，得到最终的输出<strong>Z</strong></p>
+<p><img src="https://pic2.zhimg.com/v2-7ac99bce83713d568d04e6ecfb31463b_1440w.jpg" alt="img"></p>
+<h3 id="Attention的作用"><a href="#Attention的作用" class="headerlink" title="Attention的作用"></a>Attention的作用</h3><blockquote>
+<p>query对应的是需要<strong>被表达</strong>的序列(称为序列A)，key和value对应的是<strong>用来表达</strong>A的序列(称为序列B)。序列A和序列B在高维空间 $α$ 中的高维表达 A<del>α</del> 的每个位置<strong>分别</strong>和 B<del>α</del> 计算相似度，产生的权重作用于序列B在高维空间 $β$ 中的高维表达 B<del>β</del> ，获得序列A在高维空间 $β$ 中的高维表达 A<del>β</del> </p>
+</blockquote>
+<p>Encoder部分中只存在self-attention，而Decoder部分中存在self-attention和cross-attention</p>
+<p>【self-attention】encoder中的self-attention的query, key, value都对应了源端序列(即A和B是同一序列)，decoder中的self-attention的query, key, value都对应了目标端序列。</p>
+<p>【cross-attention】decoder中的cross-attention的query对应了目标端序列，key, value对应了源端序列(每一层中的cross-attention用的都是encoder的最终输出)</p>
+<h3 id="Muti-head-Attention"><a href="#Muti-head-Attention" class="headerlink" title="Muti-head Attention"></a>Muti-head Attention</h3><p>至此我们已经了解了 <strong>Self-Attention</strong> 的工作原理，而 <strong>Multi-Head Attention</strong> 是由多个 Self-Attention 组合形成的，下图是论文中 Multi-Head Attention 的结构图。</p>
+<div>
+    <center>
+    <img src="https://picx.zhimg.com/v2-b0ea8f5b639786f98330f70405e94a75_1440w.jpg" 
+         alt="not find"
+         style="zoom: 60%;" />
+    <br>
+        <span style="color: #666; font-size: 14px;">Multi-Head Attention 结构</span>
+    </center>
+</div>
+
+
+<p>为什么要做 Muti-head Attention?</p>
+<p><img src="https://picx.zhimg.com/v2-3f8c3c102404c9b61398b63e06ffd80b_1440w.jpg" alt="img"></p>
+<p>Muti-head Attention 是把 Q 和 K 切分到不同的子空间进行计算，可以保证在总参数量不变的情况下，寻找序列不同角度的关联性，最后再把不同子空间得到的 V 拼接在一起，将不同子空间中捕获到的关联关系再综合起来。</p>
+<p>从上图可以看出，q<del>i</del> 和 k<del>j</del> 之间的 attention score 从 1 个变成了 h 个，这就对应了 h 个子空间中它们的关联度。</p>
+<h3 id="Masked-Muti-head-Attention"><a href="#Masked-Muti-head-Attention" class="headerlink" title="Masked Muti-head Attention"></a>Masked Muti-head Attention</h3><p>可以发现 Decoder 端的 Attention 还增加了Mask功能，这是因为Transformer模型属于自回归模型，也就是说后面的token的推断是基于前面的token的。Decoder端的Mask的功能是为了保证训练阶段和推理阶段的一致性。</p>
+<p>在推理阶段，token是按照从左往右的顺序推理的。也就是说，在推理timestep&#x3D;T的token时，decoder只能“看到”timestep &lt; T的 T-1 个Token, 不能和timestep大于它自身的token做attention（因为根本还不知道后面的token是什么）。为了保证训练时和推理时的一致性，所以，训练时要同样防止token与它之后的token去做attention。</p>
+<h2 id="What-others"><a href="#What-others" class="headerlink" title="What others?"></a>What others?</h2><h3 id="Add-Layer-Norm"><a href="#Add-Layer-Norm" class="headerlink" title="Add &amp; Layer Norm"></a>Add &amp; Layer Norm</h3><p>可以看到传统的 <strong>Transformer</strong> 模型中，每次 Attention 后都是 <strong>Add &amp; Layer Norm</strong>。</p>
+<p>其中 Add 是残差连接，即用输入 X 加上当前块的输出，从而缓解梯度消失，layer norm则是通过标准化使数据分布具有统一的均值和方差，从而提升模型收敛速度。</p>
+<p>公式如下：<br>$$<br>LayerNorm(X + \text{MultiHeadAttention}(X))<br>$$<br>$$<br>LayerNorm(X + \text{FeedForward}(X))<br>$$</p>
+<h3 id="Feed-Forward-Network"><a href="#Feed-Forward-Network" class="headerlink" title="Feed Forward Network"></a>Feed Forward Network</h3><p>经过 attention 之后，会有一个FFN，FFN包含了2层linear transformation层，第一层的激活函数为 Relu，第二层不使用激活函数。</p>
+<p>公式如下：<br>$$<br>FFN(x) &#x3D; max(0,xW_1 + b_1)W_2 + b_2<br>$$<br><strong>为什么要做这一步？</strong></p>
+<p>引入非线性函数，加强模型的表达能力。</p>
+<h2 id="Encoder"><a href="#Encoder" class="headerlink" title="Encoder"></a>Encoder</h2><p>正如 Transformer 架构图所示 Encoder 部分的 由一个 attention 层和一个 FFN 层组成，并且可以看到 Q&#x2F;K&#x2F;V 均来自输入 X                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     </p>
+<h2 id="Decoder"><a href="#Decoder" class="headerlink" title="Decoder"></a>Decoder</h2><p>与 Encoder 不同的是，Decoder部分有两个 attention 层和一个 FFN 层，第一个 attention 层的输入均来自 output，第二个 attention 层其实是cross-attention，即 K&#x2F;V来自 Encoder 的输出，Q 则来自第一个 attention 层的输出。</p>
+<p>可以理解成 Decoder 去检索 Encoder 的内容。</p>
+<p>最后输出层则是在经过 FFN 层后做一次 Linear 变换 + softmax 归一化，转换成概率并输出。</p>
+<p>相关链接：</p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/104393915">【经典精读】万字长文解读Transformer模型和Attention机制 </a></p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/1965070350317514869/answer/2010024069312037606">transformer 模型详解? </a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/338817680">Transformer模型详解（图解最完整版）</a></p>
+<p>Transformer 可视化工作流程：<a target="_blank" rel="noopener" href="https://poloclub.github.io/transformer-explainer/">Transformer Explainer: LLM Transformer Model Visually Explained</a></p>
+<script>
+  window.MathJax.typeset();
+</script>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://williamchen5109.github.io">WilliamChan</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://williamchen5109.github.io/2026/06/10/%E5%88%9D%E8%AF%86Transformer/">https://williamchen5109.github.io/2026/06/10/%E5%88%9D%E8%AF%86Transformer/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://williamchen5109.github.io" target="_blank">2oveno4z's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/LLM/">LLM</a></div><div class="post-share"><div class="social-share" data-image="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/05/11/hello-world/" title="Hello World"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hello World</div></div><div class="info-2"><div class="info-item-1">Welcome to my blog!</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">WilliamChan</div><div class="author-info-description">( *′д)/ A sleepy day. o(_ _)ozzZZ</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/WilliamChen5109"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/WilliamChen5109" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:q1652060105@gmail.com" target="_blank" title="Email"><i class="fa-brands fa-qq" style="color: #4a7dbe;"></i></a><a class="social-icon" href="mailto:q1652060105@gmail.com" target="_blank" title="Email"><i class="fa-brands fa-weixin" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Transformer"><span class="toc-number">1.</span> <span class="toc-text">Transformer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#What-Transformer"><span class="toc-number">1.1.</span> <span class="toc-text">What Transformer?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#What-Input%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">What Input？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#What-Q-K-V%EF%BC%9F"><span class="toc-number">1.2.1.</span> <span class="toc-text">What Q&#x2F;K&#x2F;V？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#What-Attention%EF%BC%9F"><span class="toc-number">1.3.</span> <span class="toc-text">What Attention？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#What-Self-Attention%EF%BC%9F"><span class="toc-number">1.3.1.</span> <span class="toc-text">What Self-Attention？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Attention%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">1.3.2.</span> <span class="toc-text">Attention的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Muti-head-Attention"><span class="toc-number">1.3.3.</span> <span class="toc-text">Muti-head Attention</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Masked-Muti-head-Attention"><span class="toc-number">1.3.4.</span> <span class="toc-text">Masked Muti-head Attention</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#What-others"><span class="toc-number">1.4.</span> <span class="toc-text">What others?</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Add-Layer-Norm"><span class="toc-number">1.4.1.</span> <span class="toc-text">Add &amp; Layer Norm</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Feed-Forward-Network"><span class="toc-number">1.4.2.</span> <span class="toc-text">Feed Forward Network</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Encoder"><span class="toc-number">1.5.</span> <span class="toc-text">Encoder</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Decoder"><span class="toc-number">1.6.</span> <span class="toc-text">Decoder</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/10/%E5%88%9D%E8%AF%86Transformer/" title="初识Transformer">初识Transformer</a><time datetime="2026-06-10T13:23:56.298Z" title="发表于 2026-06-10 21:23:56">2026-06-10</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/11/hello-world/" title="Hello World">Hello World</a><time datetime="2026-05-11T13:17:36.228Z" title="发表于 2026-05-11 21:17:36">2026-05-11</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/04/16/Preparation/" title="Preparation">Preparation</a><time datetime="2026-04-16T13:37:56.000Z" title="发表于 2026-04-16 21:37:56">2026-04-16</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2020 - 2026 By WilliamChan</span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'ams',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
